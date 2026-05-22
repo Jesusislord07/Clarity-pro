@@ -6,95 +6,1524 @@
     <title>Clarity Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
-        :root { --bg: #000000; --card: #1c1c1e; --accent: #007aff; --text: #ffffff; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; }
-        h1 { font-size: 28px; font-weight: 700; margin: 20px 0; color: var(--text); }
-        .drop-zone { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 40px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
-        .drop-zone:active { transform: scale(0.98); border-color: var(--accent); }
-        textarea { width: 100%; height: 250px; margin: 20px 0; border-radius: 16px; border: none; padding: 16px; background: var(--card); color: var(--text); font-size: 15px; resize: none; display: none; }
-        .meta-bar { display: flex; justify-content: space-between; font-size: 13px; color: #8e8e93; margin-bottom: 10px; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        button { padding: 14px; border-radius: 12px; border: none; font-weight: 600; font-size: 15px; cursor: pointer; background: #2c2c2e; color: white; }
-        button.primary { background: var(--accent); }
-        #status { font-size: 12px; color: #8e8e93; text-align: center; margin-top: 10px; }
+        /* ========================================
+           🎨 DESIGN TOKENS & THEME SYSTEM
+           ======================================== */
+        :root {
+            --bg-dark: #000000;
+            --bg-light: #f5f5f7;
+            --card-dark: #1c1c1e;
+            --card-light: #ffffff;
+            --accent: #007aff;
+            --text-dark: #ffffff;
+            --text-light: #000000;
+            --text-secondary-dark: #8e8e93;
+            --text-secondary-light: #666666;
+            --border-dark: rgba(255,255,255,0.1);
+            --border-light: rgba(0,0,0,0.1);
+            --success: #34c759;
+            --error: #ff3b30;
+            --warning: #ff9500;
+            
+            --current-bg: var(--bg-dark);
+            --current-card: var(--card-dark);
+            --current-text: var(--text-dark);
+            --current-text-secondary: var(--text-secondary-dark);
+            --current-border: var(--border-dark);
+        }
+
+        body.light-mode {
+            --current-bg: var(--bg-light);
+            --current-card: var(--card-light);
+            --current-text: var(--text-light);
+            --current-text-secondary: var(--text-secondary-light);
+            --current-border: var(--border-light);
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background: var(--current-bg);
+            color: var(--current-text);
+            padding: max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right));
+            padding-top: max(20px, env(safe-area-inset-top));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-y: auto;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding-bottom: 40px;
+        }
+
+        /* ========================================
+           📱 HEADER SECTION
+           ======================================== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--current-text);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: var(--current-text);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ========================================
+           🎯 DROP ZONE
+           ======================================== */
+        .drop-zone {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px dashed var(--current-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent);
+            background: rgba(0,122,255,0.05);
+        }
+
+        .drop-zone.drag-active {
+            transform: scale(0.98);
+            border-color: var(--accent);
+            background: rgba(0,122,255,0.1);
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--current-text);
+        }
+
+        .drop-zone-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* ========================================
+           📊 METADATA & STATS
+           ======================================== */
+        .meta-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--current-text-secondary);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .meta-bar.visible {
+            display: grid;
+        }
+
+        .stat-item {
+            background: var(--current-card);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--current-border);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--current-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--current-text);
+            margin-top: 5px;
+        }
+
+        /* ========================================
+           📝 TEXT AREA
+           ======================================== */
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            margin: 20px 0;
+            border-radius: 16px;
+            border: 1px solid var(--current-border);
+            padding: 16px;
+            background: var(--current-card);
+            color: var(--current-text);
+            font-size: 15px;
+            resize: vertical;
+            display: none;
+            font-family: "Menlo", "Monaco", monospace;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        textarea.visible {
+            display: block;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+        }
+
+        /* ========================================
+           🔘 BUTTONS & ACTIONS
+           ======================================== */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn-group.visible {
+            display: grid;
+        }
+
+        button {
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            background: var(--current-card);
+            color: var(--current-text);
+            border: 1px solid var(--current-border);
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        button.primary:active {
+            background: #0051d5;
+        }
+
+        button.secondary {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ========================================
+           📡 STATUS & NOTIFICATIONS
+           ======================================== */
+        #status {
+            font-size: 12px;
+            color: var(--current-text-secondary);
+            text-align: center;
+            margin-top: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-container.visible {
+            display: block;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: var(--current-text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.2s ease;
+            border-radius: 2px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            background: var(--current-card);
+            color: var(--current-text);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--current-border);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(20px);
+            animation: slideUp 0.3s ease;
+            z-index: 1000;
+            max-width: 90%;
+            margin: 0 auto;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--error); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ========================================
+           ⚙️ SETTINGS MODAL
+           ======================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--current-card);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            padding-bottom: max(24px, env(safe-area-inset-bottom));
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.3s ease;
+            z-index: 1000;
+            border: 1px solid var(--current-border);
+        }
+
+        @keyframes slideUpModal {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 10px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-header .close-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--current-border);
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .settings-value {
+            color: var(--current-text-secondary);
+            font-size: 13px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            font-size: 13px;
+            border: 1px solid var(--current-border);
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+
+        .button-group button.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* ========================================
+           🎯 REFINEMENT CONTROLS
+           ======================================== */
+        .refinement-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .refinement-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .refinement-toggle input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* ========================================
+           📱 RESPONSIVE DESIGN
+           ======================================== */
+        @media (max-width: 480px) {
+            .btn-group {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .meta-bar {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* ========================================
+           ♿ ACCESSIBILITY
+           ======================================== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Clarity Pro</h1>
-    <div class="drop-zone" onclick="document.getElementById('input').click()">
-        Tap to Select PDF
+    <!-- ========================================
+         HEADER SECTION
+         ======================================== -->
+    <div class="header">
+        <h1>Clarity Pro</h1>
+        <div class="header-buttons">
+            <button class="icon-btn" id="statsBtn" title="Statistics">📊</button>
+            <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         DROP ZONE
+         ======================================== -->
+    <div class="drop-zone" id="dropZone">
+        <span class="drop-zone-icon">📄</span>
+        <p>Tap to Select PDF<br><span style="font-size: 12px; color: var(--current-text-secondary);">or drag & drop</span></p>
     </div>
     <input type="file" id="input" hidden accept="application/pdf">
+
+    <!-- ========================================
+         STATUS & PROGRESS
+         ======================================== -->
     <div id="status">Ready for research</div>
-    
-    <div class="meta-bar" id="meta" style="display:none;">
-        <span id="wordCount">Words: 0</span>
-        <span id="pageCount">Pages: 0</span>
+
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-label">
+            <span>Processing PDF...</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
     </div>
-    
+
+    <!-- ========================================
+         METADATA & STATISTICS
+         ======================================== -->
+    <div class="meta-bar" id="meta">
+        <div class="stat-item">
+            <div class="stat-label">Words</div>
+            <div class="stat-value" id="wordCount">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Characters</div>
+            <div class="stat-value" id="charCount">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Pages</div>
+            <div class="stat-value" id="pageCount">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">File Size</div>
+            <div class="stat-value" id="fileSize">0 KB</div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TEXT AREA
+         ======================================== -->
     <textarea id="output" placeholder="Text will appear here..."></textarea>
-    
-    <div class="btn-group" id="actions" style="display: none;">
-        <button onclick="clearText()">Clear</button>
-        <button class="primary" onclick="refineText()">Refine</button>
-        <button onclick="copyText()">Copy</button>
+
+    <!-- ========================================
+         ACTION BUTTONS
+         ======================================== -->
+    <div class="btn-group" id="actions">
+        <button onclick="UndoManager.undo()" title="Undo refinement">↶ Undo</button>
+        <button class="primary" onclick="RefineEngine.refineText()" title="Refine text">✨ Refine</button>
+        <button onclick="ExportManager.copyText()" title="Copy to clipboard">📋 Copy</button>
+        <button onclick="ExportManager.exportAsFile('txt')" title="Download as TXT">⬇️ Export</button>
     </div>
 </div>
 
+<!-- ========================================
+     SETTINGS MODAL
+     ======================================== -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="modal" id="settingsModal" style="display: none;">
+    <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="close-btn" onclick="UIManager.closeModal()">✕</button>
+    </div>
+
+    <!-- THEME -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>🌓 Appearance</span>
+        </div>
+        <div class="button-group">
+            <button onclick="ThemeManager.setTheme('dark')" id="darkModeBtn" class="active">Dark</button>
+            <button onclick="ThemeManager.setTheme('light')" id="lightModeBtn">Light</button>
+        </div>
+    </div>
+
+    <!-- BRIGHTNESS -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>☀️ Brightness</span>
+            <span class="settings-value" id="brightnessValue">100%</span>
+        </div>
+        <input type="range" id="brightnessSlider" min="50" max="150" value="100" oninput="ThemeManager.setBrightness(this.value)">
+    </div>
+
+    <!-- FONT SIZE -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>📝 Text Size</span>
+        </div>
+        <div class="button-group">
+            <button onclick="UIManager.setFontSize('small')" id="fontSmallBtn">Small</button>
+            <button onclick="UIManager.setFontSize('normal')" id="fontNormalBtn" class="active">Normal</button>
+            <button onclick="UIManager.setFontSize('large')" id="fontLargeBtn">Large</button>
+        </div>
+    </div>
+
+    <!-- REFINEMENT LEVEL -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>🧹 Refinement Level</span>
+        </div>
+        <div class="button-group">
+            <button onclick="RefineEngine.setRefinementLevel('light')" id="refineLightBtn">Light</button>
+            <button onclick="RefineEngine.setRefinementLevel('moderate')" id="refineModerateBtn" class="active">Moderate</button>
+            <button onclick="RefineEngine.setRefinementLevel('aggressive')" id="refineAggressiveBtn">Aggressive</button>
+        </div>
+    </div>
+
+    <!-- AUTO-SAVE FREQUENCY -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>⏰ Auto-Save Frequency</span>
+            <span class="settings-value" id="autoSaveValue">30s</span>
+        </div>
+        <input type="range" id="autoSaveSlider" min="1" max="3" value="2" 
+               oninput="this.value == 1 ? UIManager.setAutoSaveFrequency(15000) : this.value == 2 ? UIManager.setAutoSaveFrequency(30000) : UIManager.setAutoSaveFrequency(60000)">
+        <div style="font-size: 11px; color: var(--current-text-secondary); margin-top: 8px;">
+            ← 15s | 30s | 60s →
+        </div>
+    </div>
+
+    <!-- HAPTIC FEEDBACK -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>📳 Haptic Feedback</span>
+            <label class="switch">
+                <input type="checkbox" id="hapticToggle" checked onchange="UIManager.setHaptic(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- REFINEMENT OPTIONS -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>🔧 Refinement Filters</span>
+        </div>
+        <div class="refinement-options">
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterCopyright" checked onchange="RefineEngine.updateFilters()">
+                <span>Copyright</span>
+            </label>
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterHeaders" checked onchange="RefineEngine.updateFilters()">
+                <span>Headers/Footers</span>
+            </label>
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterPageNumbers" checked onchange="RefineEngine.updateFilters()">
+                <span>Page Numbers</span>
+            </label>
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterMetadata" checked onchange="RefineEngine.updateFilters()">
+                <span>Metadata</span>
+            </label>
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterWhitespace" checked onchange="RefineEngine.updateFilters()">
+                <span>Whitespace</span>
+            </label>
+            <label class="refinement-toggle">
+                <input type="checkbox" id="filterSpecialChars" checked onchange="RefineEngine.updateFilters()">
+                <span>Special Chars</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- STATISTICS -->
+    <div class="settings-section">
+        <div class="settings-label">
+            <span>📊 Statistics</span>
+        </div>
+        <div style="font-size: 13px; line-height: 1.8; color: var(--current-text-secondary);">
+            <div>📄 PDFs Processed: <strong id="statPDFCount">0</strong></div>
+            <div>📝 Words Extracted: <strong id="statWordCount">0</strong></div>
+            <div>🕐 Total Processing Time: <strong id="statProcessingTime">0s</strong></div>
+        </div>
+    </div>
+
+    <!-- RESET BUTTON -->
+    <div class="settings-section" style="text-align: center;">
+        <button onclick="SettingsManager.resetToDefaults()" style="width: 100%;">🔄 Reset to Defaults</button>
+    </div>
+</div>
+
+<!-- ========================================
+     JAVASCRIPT - MODULAR ARCHITECTURE
+     ======================================== -->
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    async function processPDF(file) {
-        document.getElementById('status').textContent = "Processing...";
-        const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-        let fullText = "";
-        
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            fullText += content.items.map(i => i.str).join(" ") + "\n";
+    /* ========================================
+       🔧 CONFIG LAYER - All settings & constants
+       ======================================== */
+    const CONFIG = {
+        // PDF Processing
+        CHUNK_SIZE: 20,
+        MAX_FILE_SIZE: 104857600, // 100MB
+
+        // Storage & Auto-save
+        AUTO_SAVE_INTERVAL: 30000,
+        STORAGE_KEYS: {
+            state: 'clarityPro_state',
+            settings: 'clarityPro_settings',
+            stats: 'clarityPro_stats'
+        },
+
+        // Refinement Patterns
+        REFINEMENT_PATTERNS: {
+            copyright: {
+                name: 'Copyright & Rights',
+                patterns: [
+                    /©[^]*?(?=\n|$)/gi,
+                    /Copyright[\s\S]*?(?:20\d{2}|©|®)/gi,
+                    /All rights reserved[\s\S]*?(?:\.|$)/gi,
+                    /®|™|℠/g
+                ]
+            },
+            headers: {
+                name: 'Headers & Footers',
+                patterns: [
+                    /^[A-Z][A-Za-z0-9\s&\-]{0,60}$/gm,
+                    /\n\s*\n/g
+                ]
+            },
+            pageNumbers: {
+                name: 'Page Numbers',
+                patterns: [
+                    /Page\s*\d+\s*(?:of|\/)\s*\d+/gi,
+                    /\|\s*\d+\s*\|/g,
+                    /^\s*\d+\s*$/gm
+                ]
+            },
+            metadata: {
+                name: 'ISBN & DOI',
+                patterns: [
+                    /ISBN[\s\-]*(?:\d[\d\-]{9}[\dX]|\d{13})/gi,
+                    /DOI[\s:]*(?:10\.\S+\/\S+)/gi,
+                    /ISSN[\s\-]*\d{4}[\s\-]\d{4}/gi
+                ]
+            },
+            whitespace: {
+                name: 'Extra Whitespace',
+                patterns: [
+                    /\s{2,}/g,
+                    /^\s+|\s+$/gm
+                ]
+            },
+            specialChars: {
+                name: 'Unwanted Special Characters',
+                patterns: [
+                    /[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g,
+                    /\f/g
+                ]
+            }
+        },
+
+        // Theme
+        THEMES: {
+            dark: { mode: 'dark', brightness: 100 },
+            light: { mode: 'light', brightness: 100 }
+        },
+
+        // Default Settings
+        DEFAULT_SETTINGS: {
+            theme: 'dark',
+            brightness: 100,
+            fontSize: 'normal',
+            refinementLevel: 'moderate',
+            autoSaveFrequency: 30000,
+            hapticFeedback: true,
+            enabledFilters: {
+                copyright: true,
+                headers: true,
+                pageNumbers: true,
+                metadata: true,
+                whitespace: true,
+                specialChars: true
+            }
         }
+    };
 
-        document.getElementById('output').value = fullText;
-        document.getElementById('output').style.display = "block";
-        document.getElementById('actions').style.display = "grid";
-        document.getElementById('meta').style.display = "flex";
-        
-        updateMeta(fullText, pdf.numPages);
-        document.getElementById('status').textContent = "Ready.";
-    }
+    /* ========================================
+       🧠 STATE MANAGEMENT - Central app state
+       ======================================== */
+    let appState = {
+        // File Data
+        currentFile: null,
+        originalText: '',
+        currentText: '',
+        processedPages: 0,
 
-    function updateMeta(text, pages) {
-        const words = text.split(/\s+/).length;
-        document.getElementById('wordCount').textContent = "Words: " + words.toLocaleString();
-        document.getElementById('pageCount').textContent = "Pages: " + pages;
-    }
+        // Metadata
+        fileMetadata: {
+            name: '',
+            size: 0,
+            pageCount: 0,
+            extractedAt: null
+        },
 
-    function refineText() {
-        let text = document.getElementById('output').value;
-        // Strip common copyright/legalese strings
-        text = text.replace(/Copyright.*?(\d{4})/gi, "")
-                   .replace(/All rights reserved/gi, "")
-                   .replace(/\s+/g, ' ');
-        document.getElementById('output').value = text;
-        updateMeta(text, "Refined");
-    }
+        // Processing
+        isProcessing: false,
+        processingTime: 0,
 
-    function clearText() { 
-        document.getElementById('output').value = ''; 
-        document.getElementById('meta').style.display = 'none';
-        document.getElementById('actions').style.display = 'none';
-    }
-    
-    function copyText() { 
-        navigator.clipboard.writeText(document.getElementById('output').value); 
-        alert("Text copied to clipboard!"); 
-    }
+        // UI State
+        isModalOpen: false,
+        lastActionType: null,
 
-    document.getElementById('input').onchange = (e) => processPDF(e.target.files[0]);
+        // Statistics
+        stats: {
+            totalPDFsProcessed: 0,
+            totalWordsExtracted: 0,
+            totalProcessingTime: 0
+        }
+    };
+
+    let appSettings = { ...CONFIG.DEFAULT_SETTINGS };
+
+    /* ========================================
+       💾 STORAGE LAYER - IndexedDB & localStorage
+       ======================================== */
+    const StorageManager = {
+        // Initialize IndexedDB
+        async initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('ClarityPro', 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('documents')) {
+                        db.createObjectStore('documents', { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+            });
+        },
+
+        // Save state to IndexedDB
+        async saveState() {
+            try {
+                const db = await this.initDB();
+                const tx = db.transaction('documents', 'readwrite');
+                const store = tx.objectStore('documents');
+                store.put({
+                    id: 1,
+                    originalText: appState.originalText,
+                    currentText: appState.currentText,
+                    fileMetadata: appState.fileMetadata,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (e) {
+                console.warn('IndexedDB save failed:', e);
+            }
+        },
+
+        // Load state from IndexedDB
+        async loadState() {
+            try {
+                const db = await this.initDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction('documents', 'readonly');
+                    const store = tx.objectStore('documents');
+                    const request = store.get(1);
+                    request.onsuccess = () => {
+                        if (request.result) {
+                            appState.originalText = request.result.originalText;
+                            appState.currentText = request.result.currentText;
+                            appState.fileMetadata = request.result.fileMetadata;
+                            UIManager.updateUI();
+                        }
+                        resolve();
+                    };
+                });
+            } catch (e) {
+                console.warn('IndexedDB load failed:', e);
+            }
+        },
+
+        // Save settings to localStorage
+        saveSettings() {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.settings, JSON.stringify(appSettings));
+        },
+
+        // Load settings from localStorage
+        loadSettings() {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.settings);
+            if (saved) {
+                appSettings = { ...appSettings, ...JSON.parse(saved) };
+            }
+        },
+
+        // Save statistics
+        saveStats() {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.stats, JSON.stringify(appState.stats));
+        },
+
+        // Load statistics
+        loadStats() {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.stats);
+            if (saved) {
+                appState.stats = JSON.parse(saved);
+            }
+        }
+    };
+
+    /* ========================================
+       🎨 THEME MANAGER - Dark/Light + Brightness
+       ======================================== */
+    const ThemeManager = {
+        setTheme(theme) {
+            appSettings.theme = theme;
+            document.body.classList.toggle('light-mode', theme === 'light');
+            this.updateButtonStates();
+            StorageManager.saveSettings();
+            this.applyBrightness();
+        },
+
+        setBrightness(value) {
+            appSettings.brightness = parseInt(value);
+            document.getElementById('brightnessValue').textContent = `${value}%`;
+            this.applyBrightness();
+            StorageManager.saveSettings();
+        },
+
+        applyBrightness() {
+            const brightness = appSettings.brightness / 100;
+            const root = document.documentElement;
+            const filter = `brightness(${brightness})`;
+            root.style.filter = filter;
+        },
+
+        updateButtonStates() {
+            document.getElementById('darkModeBtn').classList.toggle('active', appSettings.theme === 'dark');
+            document.getElementById('lightModeBtn').classList.toggle('active', appSettings.theme === 'light');
+        },
+
+        init() {
+            this.setTheme(appSettings.theme);
+            this.setBrightness(appSettings.brightness);
+        }
+    };
+
+    /* ========================================
+       📊 STATISTICS & METADATA
+       ======================================== */
+    const MetadataManager = {
+        updateMetadata() {
+            const text = appState.currentText;
+            const words = text.trim() ? text.split(/\s+/).length : 0;
+            const chars = text.length;
+
+            document.getElementById('wordCount').textContent = words.toLocaleString();
+            document.getElementById('charCount').textContent = chars.toLocaleString();
+            document.getElementById('pageCount').textContent = appState.fileMetadata.pageCount;
+            document.getElementById('fileSize').textContent = this.formatFileSize(appState.fileMetadata.size);
+
+            // Update stats
+            appState.stats.totalWordsExtracted += words;
+            document.getElementById('statWordCount').textContent = appState.stats.totalWordsExtracted.toLocaleString();
+        },
+
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        },
+
+        recordProcessingTime(ms) {
+            appState.stats.totalProcessingTime += ms;
+            document.getElementById('statProcessingTime').textContent = (appState.stats.totalProcessingTime / 1000).toFixed(1) + 's';
+        }
+    };
+
+    /* ========================================
+       🔧 TEXT UTILITIES - Validation & Processing
+       ======================================== */
+    const TextUtils = {
+        validateFile(file) {
+            if (!file) return { valid: false, error: 'No file selected' };
+            if (file.type !== 'application/pdf') return { valid: false, error: 'File must be PDF' };
+            if (file.size > CONFIG.MAX_FILE_SIZE) return { valid: false, error: 'File too large (max 100MB)' };
+            return { valid: true };
+        },
+
+        normalizeText(text) {
+            return text
+                .replace(/\r\n/g, '\n')
+                .replace(/\n\n+/g, '\n')
+                .trim();
+        }
+    };
+
+    /* ========================================
+       🎯 PDF ENGINE - Chunked processing
+       ======================================== */
+    const PDFEngine = {
+        async processPDF(file) {
+            const validation = TextUtils.validateFile(file);
+            if (!validation.valid) {
+                UIManager.showToast(validation.error, 'error');
+                return;
+            }
+
+            appState.isProcessing = true;
+            const startTime = performance.now();
+            UIManager.showProgress(true);
+
+            try {
+                appState.currentFile = file;
+                appState.fileMetadata.name = file.name;
+                appState.fileMetadata.size = file.size;
+
+                const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                appState.fileMetadata.pageCount = pdf.numPages;
+
+                let fullText = '';
+                const chunkSize = CONFIG.CHUNK_SIZE;
+
+                for (let i = 1; i <= pdf.numPages; i += chunkSize) {
+                    const endPage = Math.min(i + chunkSize - 1, pdf.numPages);
+                    
+                    for (let page = i; page <= endPage; page++) {
+                        const pageObj = await pdf.getPage(page);
+                        const content = await pageObj.getTextContent();
+                        const pageText = content.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n';
+                    }
+
+                    appState.processedPages = endPage;
+                    UIManager.updateProgress(endPage / pdf.numPages);
+                    await new Promise(resolve => setTimeout(resolve, 10)); // Prevent UI blocking
+                }
+
+                appState.originalText = TextUtils.normalizeText(fullText);
+                appState.currentText = appState.originalText;
+                appState.stats.totalPDFsProcessed++;
+
+                await StorageManager.saveState();
+                const endTime = performance.now();
+                MetadataManager.recordProcessingTime(endTime - startTime);
+
+                UIManager.showProgress(false);
+                UIManager.updateUI();
+                UIManager.showToast('PDF processed successfully!', 'success');
+
+            } catch (error) {
+                console.error('PDF processing error:', error);
+                UIManager.showToast('Error processing PDF: ' + error.message, 'error');
+                UIManager.showProgress(false);
+            } finally {
+                appState.isProcessing = false;
+            }
+        }
+    };
+
+    /* ========================================
+       🧹 REFINEMENT ENGINE - Text cleaning
+       ======================================== */
+    const RefineEngine = {
+        currentLevel: 'moderate',
+        enabledFilters: { ...CONFIG.DEFAULT_SETTINGS.enabledFilters },
+
+        setRefinementLevel(level) {
+            this.currentLevel = level;
+            appSettings.refinementLevel = level;
+            StorageManager.saveSettings();
+            this.updateButtonStates();
+        },
+
+        updateFilters() {
+            this.enabledFilters = {
+                copyright: document.getElementById('filterCopyright').checked,
+                headers: document.getElementById('filterHeaders').checked,
+                pageNumbers: document.getElementById('filterPageNumbers').checked,
+                metadata: document.getElementById('filterMetadata').checked,
+                whitespace: document.getElementById('filterWhitespace').checked,
+                specialChars: document.getElementById('filterSpecialChars').checked
+            };
+        },
+
+        refineText() {
+            if (!appState.currentText) {
+                UIManager.showToast('No text to refine', 'warning');
+                return;
+            }
+
+            UndoManager.saveState();
+            this.updateFilters();
+
+            let refined = appState.currentText;
+
+            // Apply enabled filters
+            if (this.enabledFilters.copyright) {
+                CONFIG.REFINEMENT_PATTERNS.copyright.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, '');
+                });
+            }
+
+            if (this.enabledFilters.headers) {
+                CONFIG.REFINEMENT_PATTERNS.headers.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, '');
+                });
+            }
+
+            if (this.enabledFilters.pageNumbers) {
+                CONFIG.REFINEMENT_PATTERNS.pageNumbers.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, '');
+                });
+            }
+
+            if (this.enabledFilters.metadata) {
+                CONFIG.REFINEMENT_PATTERNS.metadata.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, '');
+                });
+            }
+
+            if (this.enabledFilters.whitespace) {
+                CONFIG.REFINEMENT_PATTERNS.whitespace.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, ' ');
+                });
+            }
+
+            if (this.enabledFilters.specialChars) {
+                CONFIG.REFINEMENT_PATTERNS.specialChars.patterns.forEach(pattern => {
+                    refined = refined.replace(pattern, '');
+                });
+            }
+
+            refined = TextUtils.normalizeText(refined);
+            appState.currentText = refined;
+            
+            StorageManager.saveState();
+            UIManager.updateUI();
+            UIManager.showToast('Text refined successfully!', 'success');
+            this.triggerHaptic();
+        },
+
+        updateButtonStates() {
+            document.getElementById('refineLightBtn').classList.toggle('active', this.currentLevel === 'light');
+            document.getElementById('refineModerateBtn').classList.toggle('active', this.currentLevel === 'moderate');
+            document.getElementById('refineAggressiveBtn').classList.toggle('active', this.currentLevel === 'aggressive');
+        },
+
+        triggerHaptic() {
+            if (appSettings.hapticFeedback && navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        }
+    };
+
+    /* ========================================
+       ↶ UNDO MANAGER - State history
+       ======================================== */
+    const UndoManager = {
+        history: [],
+
+        saveState() {
+            this.history.push({
+                originalText: appState.originalText,
+                currentText: appState.currentText
+            });
+        },
+
+        undo() {
+            if (this.history.length === 0) {
+                UIManager.showToast('Nothing to undo', 'warning');
+                return;
+            }
+
+            const previous = this.history.pop();
+            appState.originalText = previous.originalText;
+            appState.currentText = previous.currentText;
+
+            StorageManager.saveState();
+            UIManager.updateUI();
+            UIManager.showToast('Undone', 'success');
+        }
+    };
+
+    /* ========================================
+       💾 EXPORT MANAGER - Download & Share
+       ======================================== */
+    const ExportManager = {
+        async copyText() {
+            try {
+                await navigator.clipboard.writeText(appState.currentText);
+                UIManager.showToast('Copied to clipboard!', 'success');
+                RefineEngine.triggerHaptic();
+            } catch (e) {
+                UIManager.showToast('Failed to copy', 'error');
+            }
+        },
+
+        exportAsFile(format) {
+            let content = appState.currentText;
+            let filename = appState.fileMetadata.name || 'document';
+            filename = filename.replace('.pdf', '');
+
+            if (format === 'md') {
+                content = this.toMarkdown(content);
+                filename += '.md';
+            } else {
+                filename += '.txt';
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            UIManager.showToast(`Exported as ${format.toUpperCase()}!`, 'success');
+        },
+
+        toMarkdown(text) {
+            const metadata = `# ${appState.fileMetadata.name || 'Document'}\n\n`;
+            const meta = `**Extracted:** ${appState.fileMetadata.extractedAt || new Date().toLocaleString()}\n\n---\n\n`;
+            return metadata + meta + text;
+        }
+    };
+
+    /* ========================================
+       🎨 UI MANAGER - DOM & interactions
+       ======================================== */
+    const UIManager = {
+        setFontSize(size) {
+            appSettings.fontSize = size;
+            const textarea = document.getElementById('output');
+            const sizes = { small: '13px', normal: '15px', large: '17px' };
+            textarea.style.fontSize = sizes[size];
+
+            document.getElementById('fontSmallBtn').classList.toggle('active', size === 'small');
+            document.getElementById('fontNormalBtn').classList.toggle('active', size === 'normal');
+            document.getElementById('fontLargeBtn').classList.toggle('active', size === 'large');
+
+            StorageManager.saveSettings();
+        },
+
+        setAutoSaveFrequency(ms) {
+            appSettings.autoSaveFrequency = ms;
+            const labels = { 15000: '15s', 30000: '30s', 60000: '60s' };
+            document.getElementById('autoSaveValue').textContent = labels[ms];
+            StorageManager.saveSettings();
+        },
+
+        setHaptic(enabled) {
+            appSettings.hapticFeedback = enabled;
+            StorageManager.saveSettings();
+        },
+
+        updateUI() {
+            const hasText = appState.currentText.length > 0;
+            
+            document.getElementById('output').value = appState.currentText;
+            document.getElementById('output').classList.toggle('visible', hasText);
+            document.getElementById('actions').classList.toggle('visible', hasText);
+            document.getElementById('meta').classList.toggle('visible', hasText);
+
+            if (hasText) {
+                MetadataManager.updateMetadata();
+            }
+        },
+
+        updateProgress(percentage) {
+            const percent = Math.round(percentage * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
+        },
+
+        showProgress(show) {
+            document.getElementById('progressContainer').classList.toggle('visible', show);
+            document.getElementById('status').textContent = show ? 'Processing PDF...' : 'Ready for research';
+        },
+
+        showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        },
+
+        openModal() {
+            document.getElementById('modalOverlay').classList.add('visible');
+            document.getElementById('settingsModal').style.display = 'block';
+            appState.isModalOpen = true;
+        },
+
+        closeModal() {
+            document.getElementById('modalOverlay').classList.remove('visible');
+            document.getElementById('settingsModal').style.display = 'none';
+            appState.isModalOpen = false;
+        }
+    };
+
+    /* ========================================
+       ⚙️ SETTINGS MANAGER - Config & reset
+       ======================================== */
+    const SettingsManager = {
+        resetToDefaults() {
+            if (confirm('Reset all settings to defaults?')) {
+                appSettings = { ...CONFIG.DEFAULT_SETTINGS };
+                StorageManager.saveSettings();
+                ThemeManager.init();
+                RefineEngine.setRefinementLevel('moderate');
+                UIManager.setFontSize('normal');
+                UIManager.showToast('Settings reset!', 'success');
+            }
+        }
+    };
+
+    /* ========================================
+       🚀 INITIALIZATION & EVENT LISTENERS
+       ======================================== */
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Load saved settings & state
+        StorageManager.loadSettings();
+        StorageManager.loadStats();
+        await StorageManager.loadState();
+
+        // Initialize theme
+        ThemeManager.init();
+
+        // Update UI state
+        RefineEngine.enabledFilters = appSettings.enabledFilters;
+        RefineEngine.setRefinementLevel(appSettings.refinementLevel);
+        UIManager.setFontSize(appSettings.fontSize);
+        document.getElementById('autoSaveValue').textContent = 
+            appSettings.autoSaveFrequency === 15000 ? '15s' : 
+            appSettings.autoSaveFrequency === 30000 ? '30s' : '60s';
+        document.getElementById('hapticToggle').checked = appSettings.hapticFeedback;
+
+        // Update stats display
+        document.getElementById('statPDFCount').textContent = appState.stats.totalPDFsProcessed;
+        document.getElementById('statWordCount').textContent = appState.stats.totalWordsExtracted.toLocaleString();
+
+        // Event listeners
+        document.getElementById('settingsBtn').onclick = () => UIManager.openModal();
+        document.getElementById('modalOverlay').onclick = () => UIManager.closeModal();
+        document.getElementById('input').onchange = (e) => PDFEngine.processPDF(e.target.files[0]);
+
+        // Drag & drop support
+        const dropZone = document.getElementById('dropZone');
+        dropZone.ondragover = (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-active');
+        };
+        dropZone.ondragleave = () => dropZone.classList.remove('drag-active');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-active');
+            if (e.dataTransfer.files[0]) PDFEngine.processPDF(e.dataTransfer.files[0]);
+        };
+
+        // Auto-save
+        setInterval(() => {
+            if (appState.currentText) {
+                StorageManager.saveState();
+                StorageManager.saveStats();
+            }
+        }, appSettings.autoSaveFrequency);
+
+        UIManager.updateUI();
+        UIManager.showToast('Clarity Pro Ready!', 'success');
+    });
+
+    /* ========================================
+       🤖 AI INTEGRATION HOOKS (PHASE 2)
+       ======================================== */
+    const AIIntegration = {
+        // Stub for future Claude/GPT integration
+        async summarize() {
+            console.log('AI summarization hook ready');
+        },
+        async extractKeyPhrases() {
+            console.log('Key phrase extraction hook ready');
+        },
+        async analyzeSentiment() {
+            console.log('Sentiment analysis hook ready');
+        }
+    };
 </script>
+
 </body>
 </html>
